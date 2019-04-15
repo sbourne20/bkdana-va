@@ -13,6 +13,17 @@ use Illuminate\Http\Request;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
+
+
+Route::group(['middleware' => ['client']], function () {
+    //Route::get('bca','Api\BcaController@index');
+
+    Route::post('va/bills','Api\BcaController@bills');
+    Route::post('va/payments','Api\BcaController@payments');
 });
+
+Route::get('server','SoapController@index');
+Route::post('server','SoapController@index');
+Route::get('client','SoapController@client');
+
+

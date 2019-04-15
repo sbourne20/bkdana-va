@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION', 'mysql'),
+    'default' => env('DB_CONNECTION', 'bkd_va'),
 
     /*
     |--------------------------------------------------------------------------
@@ -32,6 +32,44 @@ return [
     */
 
     'connections' => [
+
+        'bkd' => [
+            'driver' => 'mysql',
+            'host' => env('DB_HOST_BKD', '127.0.0.1'),
+            'port' => env('DB_PORT_BKD', '3306'),
+            'database' => env('DB_DATABASE_BKD', 'forge'),
+            'username' => env('DB_USERNAME_BKD', 'forge'),
+            'password' => env('DB_PASSWORD_BKD', ''),
+            'unix_socket' => env('DB_SOCKET_BKD', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
+
+        'bkd_va' => [
+            'driver' => 'mysql',
+            'host' => env('DB_HOST_BKD_VA', '127.0.0.1'),
+            'port' => env('DB_PORT_BKD_VA', '3306'),
+            'database' => env('DB_DATABASE_BKD_VA', 'forge'),
+            'username' => env('DB_USERNAME_BKD_VA', 'forge'),
+            'password' => env('DB_PASSWORD_BKD_VA', ''),
+            'unix_socket' => env('DB_SOCKET_BKD_VA', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
 
         'sqlite' => [
             'driver' => 'sqlite',
