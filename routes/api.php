@@ -22,8 +22,8 @@ Route::group(['middleware' => ['client']], function () {
     Route::post('va/payments','Api\BcaController@payments');
 });
 
-Route::get('server','SoapController@index');
-Route::post('server','SoapController@index');
-Route::get('client','SoapController@client');
+// Route::get('server','SoapController@index');
+// Route::post('server','SoapController@index');
+// Route::get('client','SoapController@client');
 
 

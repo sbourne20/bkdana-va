@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Carbon\Carbon;
+use App\Models\Bank;
 use App\Models\Wallet;
 use App\Models\WalletDetail;
 use App\Models\UserVirtualAccount;
@@ -72,7 +73,11 @@ class BcaController extends Controller
             //no billing method used, so just return no bill response
 
             //return response
-            $response = $billsInquiryRequest;
+            $response = array();
+
+            $response["CompanyCode"] = $billsInquiryRequest['CompanyCode'];
+            $response["CustomerNumber"] = $billsInquiryRequest['CustomerNumber'];
+            $response["RequestID"] = $billsInquiryRequest['RequestID'];
             $response["InquiryStatus"] = $billsInquiryResponse['inquiryStatus'];
             $response["InquiryReason"] = $billsInquiryResponse['inquiryReason'];
             $response["CustomerName"] = "Customer BCA Virtual Account";
@@ -81,13 +86,14 @@ class BcaController extends Controller
             $response["SubCompany"] = "00000";
             $response["DetailBills"]= null;
             $response["FreeTexts"]= null;
+            $response["AdditionalData"]= $billsInquiryRequest['AdditionalData'];
 
             return response()->json($response);
         }
         catch(\Exception $e){
             return response()->json([
                 'code' => '-1',
-                'message' => $e->getMessage()
+                'message' => 'Error, please contact us to resolve this issue.'
             ]);
         }
     }
@@ -160,7 +166,7 @@ class BcaController extends Controller
 
     //payments non-bill
     public function payments(Request $request){
-        try{
+        //try{
             //get parameters
             $paymentRequest = $request->json()->all();
 
@@ -187,8 +193,13 @@ class BcaController extends Controller
                 $paymentRequestLog->additional_data = isset($paymentRequest['Additionaldata']) ? $paymentRequest['Additionaldata'] : '';
                 $paymentRequestLog->save();
 
+                $bank = Bank::where('bank_va_prefix',$paymentRequest['CompanyCode'])->first();
+
                 //get user wallet based on virtual account no.
-                $userVirtualAccount = UserVirtualAccount::with('wallet')->where('virtual_account_no',$paymentRequest['CustomerNumber'])->first();
+                $userVirtualAccount = UserVirtualAccount::with('wallet')->where([
+                        ['virtual_account_no','=',$paymentRequest['CustomerNumber']],
+                        ['bank_id','=',$bank['bank_id']]
+                    ])->first();
 
                 //data exists
                 if($userVirtualAccount){
@@ -221,35 +232,69 @@ class BcaController extends Controller
                     $userWalletDetail->timestamps = false; //disable laravel timestamp feature
                     $userWalletDetail->save();
 
-                    $response = $paymentRequest;
+                    $response = array();
+                    $response['CompanyCode'] = $paymentRequest['CompanyCode'];
+                    $response['CustomerNumber'] = $paymentRequest['CustomerNumber'];
+                    $response['RequestID'] = $paymentRequest['RequestID'];
                     $response['PaymentFlagStatus'] = $paymentResponse['paymentFlagStatus'];
                     $response['PaymentFlagReason'] =$paymentResponse['paymentFlagReason'];
+                    $response['CustomerName'] = $paymentRequest['CustomerName'];
+                    $response['CurrencyCode'] = $paymentRequest['CurrencyCode'];
+                    $response['PaidAmount'] = $paymentRequest['PaidAmount'];
+                    $response['TotalAmount'] = $paymentRequest['TotalAmount'];
+                    $response['TransactionDate'] = $paymentRequest['TransactionDate'];
+                    $response['DetailBills'] = null;
+                    $response['FreeTexts'] = null;
+                    $response['AdditionalData'] = isset($paymentRequest['AdditionalData']) ? $paymentRequest['AdditionalData'] : "";
                     return response()->json($response);
                 }
                 //error, no data found!
                 else{
-                    $response = $paymentRequest;
+                    $response = array();
+                    $response['CompanyCode'] = $paymentRequest['CompanyCode'];
+                    $response['CustomerNumber'] = $paymentRequest['CustomerNumber'];
+                    $response['RequestID'] = $paymentRequest['RequestID'];
                     $response['PaymentFlagStatus'] = "01";
                     $response['PaymentFlagReason'] = array(
                         "Indonesian" => "Customer Number tidak ditemukan",
                         "English" => "Customer Number not found"
                     );
+                    $response['CustomerName'] = $paymentRequest['CustomerName'];
+                    $response['CurrencyCode'] = $paymentRequest['CurrencyCode'];
+                    $response['PaidAmount'] = $paymentRequest['PaidAmount'];
+                    $response['TotalAmount'] = $paymentRequest['TotalAmount'];
+                    $response['TransactionDate'] = $paymentRequest['TransactionDate'];
+                    $response['DetailBills'] = null;
+                    $response['FreeTexts'] = null;
+                    $response['AdditionalData'] = isset($paymentRequest['AdditionalData']) ? $paymentRequest['AdditionalData'] : "";
                     return response()->json($response);
                 }
             }
             else{
-                $response = $paymentRequest;
+                $response = array();
+                $response['CompanyCode'] = $paymentRequest['CompanyCode'];
+                $response['CustomerNumber'] = $paymentRequest['CustomerNumber'];
+                $response['RequestID'] = $paymentRequest['RequestID'];
                 $response['PaymentFlagStatus'] = $paymentResponse['paymentFlagStatus'];
                 $response['PaymentFlagReason'] =$paymentResponse['paymentFlagReason'];
+                $response['CustomerName'] = $paymentRequest['CustomerName'];
+                $response['CurrencyCode'] = $paymentRequest['CurrencyCode'];
+                $response['PaidAmount'] = $paymentRequest['PaidAmount'];
+                $response['TotalAmount'] = $paymentRequest['TotalAmount'];
+                $response['TransactionDate'] = $paymentRequest['TransactionDate'];
+                $response['DetailBills'] = null;
+                $response['FreeTexts'] = null;
+                $response['AdditionalData'] = isset($paymentRequest['AdditionalData']) ? $paymentRequest['AdditionalData'] : "";
                 return response()->json($response);
             }
-        }
-        catch(\Exception $e){
-            return response()->json([
-                'code' => '-1',
-                'message' => $e->getMessage()
-            ]);
-        }
+        // }
+        // catch(\Exception $e){
+        //     return response()->json([
+        //         'code' => '-1',
+        //         'message' => $e->getMessage()
+        //         //'message' => 'Error, please contact us to resolve this issue.'
+        //     ]);
+        // }
     }
 
     public function validatePaymentRequest($request){
